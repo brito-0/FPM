@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "TCharacter.generated.h"
 
 class UCameraComponent;
@@ -36,10 +37,29 @@ public:
 	// get functions
 	UFUNCTION(BlueprintCallable, Category = Camera)
 	UCameraComponent* GetTCameraComponent() { return TCameraComponent; }
+	UFUNCTION(BlueprintCallable, Category = CharacterState)
+	ETCharacterState GetCharacterState() const { return CharacterState; }
+	UFUNCTION(BlueprintCallable, Category = CharacterState)
+	ETCharacterState GetPrevCharacterState() const { return PrevCharacterState; }
+	UFUNCTION(BlueprintCallable, Category = CharacterStats)
+	float GetCharacterMaxHealth() const { return MaxHealth; }
+	UFUNCTION(BlueprintCallable, Category = CharacterStats)
+	float GetCharacterCurrentHealth() const { return CurrentHealth; }
+	UFUNCTION(BlueprintCallable, Category = CharacterStats)
+	float GetCharacterCurrentSpeed() const { return GetCharacterMovement()->MaxWalkSpeed; };
+
+
+	UFUNCTION(Blueprintable, Category = Character)
+	bool CharacterTakeDamage(const float Damage);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	/***/
+	void MoveForward(const float Value);
+	/***/
+	void MoveRight(const float Value);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -113,8 +133,8 @@ private:
 
 	void CapsuleChangeNormal();
 
-	void CharacterJum();
-	void CharcterJumpDamage();
+	void CharacterJump();
+	void CharacterJumpDamage();
 	FTimerHandle JumpDamageHandle;
 
 
