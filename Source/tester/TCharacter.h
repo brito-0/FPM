@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TCharacter.generated.h"
 
 class UCameraComponent;
+class UInputMappingContext;
+class UInputAction;
 
 UENUM()
 enum class ETCharacterState : uint8
@@ -61,10 +64,54 @@ protected:
 	/***/
 	void MoveRight(const float Value);
 
+	/***/
+	void Move(const FInputActionValue &Value);
+	/***/
+	void Look(const FInputActionValue& Value);
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent *TCameraComponent;
 
+
+	/** mapping context */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputMappingContext *DefaultMappingContext;
+	/** move input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *MoveAction;
+	/** look input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *LookAction;
+	/** crouch input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *CrouchAction;
+	/** run input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *RunAction;
+	/** jump input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *JumpAction;
+	/** interact input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *InteractAction;
+	/** ranged attack input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *RangedAction;
+	/** melee attack input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *MeleeAction;
+	/** heal input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *HealAction;
+	/** teleport input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *TeleportAction;
+	/** TEST INPUT ACTION */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *TestAction;
+
+	
 	/***/
 	UPROPERTY(VisibleAnywhere)
 	ETCharacterState CharacterState = ETCharacterState::Crouch;
@@ -123,7 +170,7 @@ private:
 	void CanStandDelay();
 	void CanStand();
 
-	bool CheckCapsule();
+	bool CheckCapsule() const;
 
 	FTimerHandle StopRunHandle;
 	const float StopRunDelay = .3f;
@@ -172,7 +219,7 @@ private:
 	void CharacterMeleeAttack();
 	const float MeleeAttackCost = 10.f;
 	const float MeleeAttackRange = 500.f;
-	void CharacterMeleeRecoil();
+	void CharacterMeleeRecoil() const;
 	const float MeleeAttackRecoilRange = -650.f;
 	const float MeleeAttackRecoilRangeGround = -750.f;
 	// const float MeleeAttackCooldown = 1.f;
@@ -190,12 +237,12 @@ private:
 	void CharacterFinishHeal();
 	void SetHealingFalse() { bHealing = false; }
 
-	void CharacterChangeSpeed(const float Value);
+	void CharacterChangeSpeed(const float Value) const;
 
 	
 	// teleport
 	void InstantTeleport();
-	bool CheckCollision(const FVector TeleportLocation);
+	bool CheckCollision(const FVector& TeleportLocation);
 	const float TeleportMinRange = 450.f;
 	const float TeleportMaxRange = 5000.f;
 	const float TeleportLocationOffset = 50.f;
