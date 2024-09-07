@@ -74,6 +74,7 @@ private:
 	UCameraComponent *TCameraComponent;
 
 
+	// input
 	/** mapping context */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext *DefaultMappingContext;
@@ -131,13 +132,13 @@ private:
 
 	
 	// character movement speeds
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float WalkSpeed = 750.f;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float RunSpeed = 950.f;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float CrouchSpeed = 450.f;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float MaxSpeed = 4515.f;
 
 	// health
@@ -146,22 +147,17 @@ private:
 	float CurrentHealth;
 
 	// capsule
-	// UPROPERTY()
 	const float CapsuleRadius = 50.f;
-	// UPROPERTY()
 	const float CapsuleHeight = 96.f;
-	// UPROPERTY()
 	const float CrouchCapsuleHeight = 60.f;
 	// offset to change the position of the capsule
-	// UPROPERTY()
 	const float CrouchOffset = 36.f;
 	// length of the ray cast to check for collisions when increasing the size of the capsule
-	// UPROPERTY()
 	const float CrouchStandingLineLength = 140.f;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = Stuck)
 	bool bStuck = false;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = Stuck)
 	FVector StuckLoc;
 	
 	void CharacterCrouch();
@@ -188,52 +184,68 @@ private:
 	// movement
 	UPROPERTY()
 	float PrevAngle;
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float MaxTurnAngle = 44.f;
 	UPROPERTY()
 	int16 PrevHeight;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Movement)
 	int16 JumpStartHeight;
 	UPROPERTY()
 	int16 JumpEndHeight;
-	const int16 JumpMaxHeight = 850;
-	const float BaseFallDamage = 25.f;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = Movement)
+	int16 JumpMaxHeight = 850;
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float BaseFallDamage = 25.f;
+	UPROPERTY(VisibleAnywhere, Category = Movement)
 	bool bFalling = false;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = Movement)
 	bool bMomentum = false;
 
-	const float SpeedDecayRate = 5.f;
-	const float SpeedDecayRateGround = 15.f;
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float SpeedDecayRate = 5.f;
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float SpeedDecayRateGround = 15.f;
 
 	// attacks
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = Attack)
 	bool bCanAttack = true;
 	FTimerHandle AttackHandle;
-	const float AttackCooldown = 2.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float AttackCooldown = 2.f;
 	void SetCanAttackTrue() { bCanAttack = true; }
 
 	void CharacterRangedAttack();
-	const float RangedAttackCost = 15.f;
-	const float RangedAttackRange = 1500.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float RangedAttackCost = 15.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float RangedAttackRange = 1500.f;
 
 	void CharacterMeleeAttack();
-	const float MeleeAttackCost = 10.f;
-	const float MeleeAttackRange = 500.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float MeleeAttackCost = 10.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float MeleeAttackRange = 500.f;
 	void CharacterMeleeRecoil() const;
-	const float MeleeAttackRecoilRange = -650.f;
-	const float MeleeAttackRecoilRangeGround = -750.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float MeleeAttackRecoilRange = -650.f;
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float MeleeAttackRecoilRangeGround = -750.f;
 	// const float MeleeAttackCooldown = 1.f;
 	// const float MeleeAttack
 
 	
 	// heal
 	void CharacterHeal();
-	const float HealSpeedModifier = .6f;
-	UPROPERTY(VisibleAnywhere, Category = Status)
+	UPROPERTY(VisibleAnywhere, Category = Heal)
 	bool bHealing = false;
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float HealSpeedModifier = .6f;
 	FTimerHandle HealHandle;
-	const float HealDuration = 3.5f;
-	const float HealAmount = 25.f;
+	UPROPERTY(EditAnywhere, Category = Heal)
+	float HealDuration = 3.5f;
+	UPROPERTY(EditAnywhere, Category = Heal)
+	float HealAmount = 25.f;
 	void CharacterFinishHeal();
 	void SetHealingFalse() { bHealing = false; }
 
@@ -243,13 +255,18 @@ private:
 	// teleport
 	void InstantTeleport();
 	bool CheckCollision(const FVector& TeleportLocation);
-	const float TeleportMinRange = 450.f;
-	const float TeleportMaxRange = 5000.f;
-	const float TeleportLocationOffset = 50.f;
+	UPROPERTY(EditAnywhere, Category = Teleport)
 	bool bCanTeleport = true;
+	UPROPERTY(EditAnywhere, Category = Teleport)
+	float TeleportMinRange = 450.f;
+	UPROPERTY(EditAnywhere, Category = Teleport)
+	float TeleportMaxRange = 5000.f;
+	UPROPERTY(EditAnywhere, Category = Teleport)
+	float TeleportLocationOffset = 50.f;
 	FTimerHandle TeleportHandle;
 	void SetCanTeleportTrue() { bCanTeleport = true; }
-	const float TeleportCooldown = 5.f;
+	UPROPERTY(EditAnywhere, Category = Teleport)
+	float TeleportCooldown = 5.f;
 
 	const float TeleportSizeSide = 55.f;
 	const float TeleportSizeStand = 197.f;

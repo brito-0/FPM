@@ -61,10 +61,13 @@ void ATCharacter::BeginPlay()
 	
 	ChangeStateNormal();
 	CurrentHealth = MaxHealth;
+
+	if (MeleeAttackRecoilRange > 0) MeleeAttackRecoilRange *= -1;
+	if (MeleeAttackRecoilRangeGround > 0) MeleeAttackRecoilRangeGround *= -1;
 }
 
 // Called every frame
-void ATCharacter::Tick(float DeltaTime)
+void ATCharacter::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -77,10 +80,12 @@ void ATCharacter::Tick(float DeltaTime)
 			const FRotator TempDir = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->Velocity);
 			if (!PrevAngle) PrevAngle = TempDir.Yaw;
 			if (!PrevHeight) PrevHeight = static_cast<int16>(GetActorLocation().Z);
-			if (abs(abs(PrevAngle)-abs(TempDir.Yaw)) > 44.f)
+			
+			if (abs(abs(PrevAngle)-abs(TempDir.Yaw)) > MaxTurnAngle)
 			{
 				bMomentum = false;
-				GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+				// GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+				CharacterChangeSpeed(CrouchSpeed);
 				return;
 			}
 
@@ -130,6 +135,7 @@ void ATCharacter::Tick(float DeltaTime)
 		{
 			JumpStartHeight = static_cast<int16>(GetActorLocation().Z);
 			UE_LOG(LogTemp,Warning,TEXT("JUMP>%d"),JumpStartHeight);
+			return;
 		}
 
 		JumpEndHeight = static_cast<int16>(GetActorLocation().Z);
@@ -493,9 +499,9 @@ void ATCharacter::CharacterJumpDamage()
 {
 	if (!GetCharacterMovement()->IsMovingOnGround()) return;
 
-	if (JumpStartHeight-JumpEndHeight >= JumpMaxHeight)
+	if (const int16 JumpDist = JumpStartHeight-JumpEndHeight; JumpDist >= JumpMaxHeight)
 	{
-		const float FallDamage = BaseFallDamage+((JumpStartHeight-JumpEndHeight)-JumpMaxHeight)*.015f;
+		const float FallDamage = BaseFallDamage+(JumpDist-JumpMaxHeight)*.015f;
 		CharacterTakeDamage(FallDamage);
 
 		UE_LOG(LogTemp,Warning,TEXT("JUMP DAMAGE TAKEN"));
@@ -650,7 +656,7 @@ bool ATCharacter::CheckCollision(const FVector &TeleportLocation)
 	SideCount += GetWorld()->LineTraceSingleByChannel(CSResult,TeleportLocation,(TeleportLocation+(GetActorRightVector()*TeleportSizeSide)),
 		ECC_Visibility,CSQueryP,CSResponseP) ? 1 : 0;
 
-	UE_LOG(LogTemp,Warning,TEXT("SIDECOUNT>%d"),SideCount);
+	UE_LOG(LogTemp,Warning,TEXT("SIDE COUNT>%d"),SideCount);
 
 	if (SideCount >= 3) return false;
 
