@@ -132,12 +132,16 @@ private:
 
 	
 	// character movement speeds
+	/** default: 750.0 */
 	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float WalkSpeed = 750.f;
+	/** default: 950.0 */
 	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float RunSpeed = 950.f;
+	/** default: 450.0 */
 	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float CrouchSpeed = 450.f;
+	/** default: 4515.0 */
 	UPROPERTY(EditAnywhere, Category = MovementSpeeds)
 	float MaxSpeed = 4515.f;
 
@@ -184,6 +188,7 @@ private:
 	// movement
 	UPROPERTY()
 	float PrevAngle;
+	/** default: 44.0 */
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float MaxTurnAngle = 44.f;
 	UPROPERTY()
@@ -192,18 +197,22 @@ private:
 	int16 JumpStartHeight;
 	UPROPERTY()
 	int16 JumpEndHeight;
+	/** default: 850 */
 	UPROPERTY(EditAnywhere, Category = Movement)
 	int16 JumpMaxHeight = 850;
+	/** default: 25.0 */
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float BaseFallDamage = 25.f;
-	UPROPERTY(VisibleAnywhere, Category = Movement)
-	bool bFalling = false;
+	// UPROPERTY(VisibleAnywhere, Category = Movement)
+	// bool bFalling = false;
 
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	bool bMomentum = false;
 
+	/** default: 5.0 */
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float SpeedDecayRate = 5.f;
+	/** default: 15.0 */
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float SpeedDecayRateGround = 15.f;
 
@@ -211,24 +220,31 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Attack)
 	bool bCanAttack = true;
 	FTimerHandle AttackHandle;
+	/** default: 2.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float AttackCooldown = 2.f;
 	void SetCanAttackTrue() { bCanAttack = true; }
 
 	void CharacterRangedAttack();
+	/** default: 15.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float RangedAttackCost = 15.f;
+	/** default: 1500.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float RangedAttackRange = 1500.f;
 
 	void CharacterMeleeAttack();
+	/** default: 10.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float MeleeAttackCost = 10.f;
+	/** default: 500.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float MeleeAttackRange = 500.f;
 	void CharacterMeleeRecoil() const;
+	/** NEGATIVE VALUE | default: -650.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float MeleeAttackRecoilRange = -650.f;
+	/** NEGATIVE VALUE | default: -750.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float MeleeAttackRecoilRangeGround = -750.f;
 	// const float MeleeAttackCooldown = 1.f;
@@ -239,11 +255,14 @@ private:
 	void CharacterHeal();
 	UPROPERTY(VisibleAnywhere, Category = Heal)
 	bool bHealing = false;
+	/** default: 0.6 */
 	UPROPERTY(EditAnywhere, Category = Movement)
 	float HealSpeedModifier = .6f;
 	FTimerHandle HealHandle;
+	/** default: 3.5 */
 	UPROPERTY(EditAnywhere, Category = Heal)
 	float HealDuration = 3.5f;
+	/** default: 25.0 */
 	UPROPERTY(EditAnywhere, Category = Heal)
 	float HealAmount = 25.f;
 	void CharacterFinishHeal();
@@ -255,16 +274,21 @@ private:
 	// teleport
 	void InstantTeleport();
 	bool CheckCollision(const FVector& TeleportLocation);
+	/** default: true */
 	UPROPERTY(EditAnywhere, Category = Teleport)
 	bool bCanTeleport = true;
+	/** default: 450.0 */
 	UPROPERTY(EditAnywhere, Category = Teleport)
 	float TeleportMinRange = 450.f;
+	/** default: 5000.0 */
 	UPROPERTY(EditAnywhere, Category = Teleport)
 	float TeleportMaxRange = 5000.f;
+	/** default: 50.0 */
 	UPROPERTY(EditAnywhere, Category = Teleport)
 	float TeleportLocationOffset = 50.f;
 	FTimerHandle TeleportHandle;
 	void SetCanTeleportTrue() { bCanTeleport = true; }
+	/** default: 5.0 */
 	UPROPERTY(EditAnywhere, Category = Teleport)
 	float TeleportCooldown = 5.f;
 

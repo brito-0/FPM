@@ -62,8 +62,8 @@ void ATCharacter::BeginPlay()
 	ChangeStateNormal();
 	CurrentHealth = MaxHealth;
 
-	if (MeleeAttackRecoilRange > 0) MeleeAttackRecoilRange *= -1;
-	if (MeleeAttackRecoilRangeGround > 0) MeleeAttackRecoilRangeGround *= -1;
+	if (MeleeAttackRecoilRange > 0) MeleeAttackRecoilRange = -650.f;
+	if (MeleeAttackRecoilRangeGround > 0) MeleeAttackRecoilRangeGround = -750.f;
 }
 
 // Called every frame
@@ -90,40 +90,45 @@ void ATCharacter::Tick(const float DeltaTime)
 			}
 
 			// check for movement
+			const int16 CurrHeight = static_cast<int16>(GetActorLocation().Z);
 			if (GetCharacterMovement()->IsMovingOnGround())
 			{
-				// UE_LOG(LogTemp,Warning,TEXT("%d|%d|%f"),PrevHeight,static_cast<int16>(GetActorLocation().Z),(PrevHeight-static_cast<int16>(GetActorLocation().Z))*2.7f);
+				// UE_LOG(LogTemp,Warning,TEXT("%d|%d|%f"),PrevHeight,CurrHeight,(PrevHeight-CurrHeight)*2.7f);
 
 				// increase speed if player is going down and decrease if going up
-				if (PrevHeight != static_cast<int16>(GetActorLocation().Z))
+				if (PrevHeight != CurrHeight)
 				{
-					GetCharacterMovement()->MaxWalkSpeed += (PrevHeight-static_cast<int16>(GetActorLocation().Z))*2.7f;
-					if (GetCharacterMovement()->MaxWalkSpeed > MaxSpeed) GetCharacterMovement()->MaxWalkSpeed = MaxSpeed;
+					GetCharacterMovement()->MaxWalkSpeed += (PrevHeight-CurrHeight)*2.7f;
+					// if (GetCharacterMovement()->MaxWalkSpeed > MaxSpeed) GetCharacterMovement()->MaxWalkSpeed = MaxSpeed;
+					if (GetCharacterCurrentSpeed() > MaxSpeed) CharacterChangeSpeed(MaxSpeed);
+
 					
-					// if (GetCharacterMovement()->MaxWalkSpeed+(PrevHeight-static_cast<int16>(GetActorLocation().Z))*2.7f >= MaxSpeed)
+					// if (GetCharacterMovement()->MaxWalkSpeed+(PrevHeight-CurrHeight)*2.7f >= MaxSpeed)
 					// 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeed;
 					// else
-					// 	GetCharacterMovement()->MaxWalkSpeed += (PrevHeight-static_cast<int16>(GetActorLocation().Z))*2.7f;
+					// 	GetCharacterMovement()->MaxWalkSpeed += (PrevHeight-CurrHeight)*2.7f;
 				}
 			}
 			else GetCharacterMovement()->MaxWalkSpeed -= SpeedDecayRate;
 
 			// decrease speed slightly if neither
 			// if speed is smaller or equal to crouch speed set bMomentum to false
-
-			if (GetCharacterMovement()->MaxWalkSpeed - SpeedDecayRate <= CrouchSpeed)
+			// if (GetCharacterMovement()->MaxWalkSpeed - SpeedDecayRate <= CrouchSpeed)
+			if (GetCharacterCurrentSpeed() - SpeedDecayRate <= CrouchSpeed)
 			{
 				bMomentum = false;
-				GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+				// GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+				CharacterChangeSpeed(CrouchSpeed);
 			}
 			else GetCharacterMovement()->MaxWalkSpeed -= GetCharacterMovement()->IsMovingOnGround() ? SpeedDecayRateGround : SpeedDecayRate;
 
 			PrevAngle = TempDir.Yaw;
-			PrevHeight = static_cast<int16>(GetActorLocation().Z);
+			PrevHeight = CurrHeight;
 		}
 		else
 		{
-			GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+			// GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+			CharacterChangeSpeed(CrouchSpeed);
 			PrevAngle = NULL;
 			PrevHeight = NULL;
 		}
@@ -192,10 +197,17 @@ void ATCharacter::SetCharacterState(const ETCharacterState State)
 		}
 	case ETCharacterState::Run:
 		{
-			CharacterState = ETCharacterState::Run;
+			// prevents the player from changing state when crouching under a platform
+			if (GetPrevCharacterState() == ETCharacterState::Crouch)
+				if (CheckCapsule())
+				{
+					CapsuleChangeNormal();
+				}
+				else return;
 
-			// if (GetPrevCharacterState() == ETCharacterState::Crouch) CharacterUnCrouch();
-			if (GetPrevCharacterState() == ETCharacterState::Crouch) CapsuleChangeNormal();
+			
+			CharacterState = ETCharacterState::Run;
+			
 			// GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 			CharacterChangeSpeed(RunSpeed);
 			GetCharacterMovement()->JumpZVelocity = 400.f;
@@ -212,6 +224,7 @@ void ATCharacter::SetCharacterState(const ETCharacterState State)
 
 			// set health to 0
 
+			CurrentHealth = 0.f;
 			CharacterChangeSpeed(0.f);
 			GetCharacterMovement()->SetJumpAllowed(false);
 			bMomentum = false;
@@ -236,7 +249,6 @@ bool ATCharacter::CharacterTakeDamage(const float Damage)
 
 	if (GetCharacterCurrentHealth()-Damage <= 0.f)
 	{
-		CurrentHealth = 0.f;
 		ChangeStateDead();
 		return true;
 	}
@@ -256,6 +268,9 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	check(PlayerInputComponent);
 
+	
+	// ///////////////////////////////////////////// ENHANCED INPUT /////////////////////////////////////////////
+	
 	// if (UEnhancedInputComponent *Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	// {
 	// 	// move
@@ -297,6 +312,9 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	// 	Input->BindAction(TestAction,ETriggerEvent::Triggered,this,&ATCharacter::Test);
 	// }
 
+	// ///////////////////////////////////////////// ENHANCED INPUT /////////////////////////////////////////////
+
+
 	
 	// movement and mouse
 	PlayerInputComponent->BindAxis("MoveForward",this,&ATCharacter::MoveForward);
@@ -313,11 +331,12 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Sprint",IE_Released,this,&ATCharacter::CharacterStopRun);
 
 	// jump
-	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ATCharacter::Jump);
+	// PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ATCharacter::Jump);
+	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ATCharacter::CharacterJump);
 	PlayerInputComponent->BindAction("Jump",IE_Released,this,&ATCharacter::StopJumping);
 
 	// interact
-
+	// PlayerInputComponent->BindAction("Interact",IE_Pressed,this,&ATCharacter::);
 	
 	// ranged attack
 	PlayerInputComponent->BindAction("RangedAttack",IE_Pressed,this,&ATCharacter::CharacterRangedAttack);
@@ -462,6 +481,7 @@ bool ATCharacter::CheckCapsule() const
 	CSQueryP.TraceTag = "TraceTag";
 	FCollisionResponseParams CSResponseP;
 
+	// capsule corner vectors
 	const FVector FrontStart = GetActorLocation()+GetActorForwardVector()*49;
 	const FVector FrontEnd = FrontStart+GetActorUpVector()*CrouchStandingLineLength;
 	const FVector BackStart = GetActorLocation()+GetActorForwardVector()*-49;
@@ -481,7 +501,6 @@ bool ATCharacter::CheckCapsule() const
 void ATCharacter::CharacterStopRun()
 {
 	if (GetCharacterState() != ETCharacterState::Run) return;
-	
 	GetWorldTimerManager().SetTimer(StopRunHandle,this,&ATCharacter::ChangeStateNormal,StopRunDelay,false);
 }
 
@@ -489,6 +508,13 @@ void ATCharacter::CharacterJump()
 {
 	if (!GetCharacterMovement()->IsMovingOnGround()) return;
 
+	// prevents the player from delaying jump damage
+	if (JumpStartHeight && GetWorldTimerManager().IsTimerActive(JumpDamageHandle))
+	{
+		GetWorldTimerManager().ClearTimer(JumpDamageHandle);
+		CharacterJumpDamage();
+	}
+	
 	JumpStartHeight = static_cast<int16>(GetActorLocation().Z);
 	UE_LOG(LogTemp,Warning,TEXT("JUMP>%d"),JumpStartHeight);
 
@@ -508,6 +534,7 @@ void ATCharacter::CharacterJumpDamage()
 	}
 
 	JumpStartHeight = NULL;
+	// bFalling = false;
 }
 
 void ATCharacter::CharacterRangedAttack()
@@ -583,12 +610,9 @@ void ATCharacter::CharacterFinishHeal()
 	else CurrentHealth += HealAmount;
 
 	// return speed to normal
-	// safsdfsdgfsdfsdfsdgsdfgnjfgjfghgfhfgsafsdfsdgfsdfsdfsdgsdfgnjfgjfghgfhfgsafsdfsdgfsdfsdfsdgsdfgnjfgjfghgfhfgsafsdfsdgfsdfsdfsdgsdfgnjfgjfghgfhfgsafsdfsdgfsdfsdfsdgsdfgnjfgjsafsdfsdgfsdfsdfsdgsdfgnjfgjfghgfg
-	// if (GetCharacterState() != ETCharacterState::Normal) CharacterChangeSpeed(WalkSpeed);
-	// else if (GetCharacterState() != ETCharacterState::Run) CharacterChangeSpeed(RunSpeed);
 	if (GetCharacterState() == ETCharacterState::Normal) CharacterChangeSpeed(WalkSpeed);
-	// else if (GetCharacterState() == ETCharacterState::Crouch) CharacterChangeSpeed(CrouchSpeed);
 	else if (GetCharacterState() == ETCharacterState::Run) CharacterChangeSpeed(RunSpeed);
+	// else if (GetCharacterState() == ETCharacterState::Crouch) CharacterChangeSpeed(CrouchSpeed);
 
 	UE_LOG(LogTemp,Warning,TEXT("HEAL FINISHED"));
 }
