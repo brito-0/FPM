@@ -213,7 +213,7 @@ private:
 	const float StandTimeDelay = .25f;
 
 	/**
-	 * changes @p CharacterState to Normal or Run and increases the size of the collision capsule.
+	 * changes @p CharacterState to Normal or Run and returns the collision capsule to its normal size.
 	 */
 	void CapsuleChangeNormal();
 
@@ -224,7 +224,7 @@ private:
 	 */
 	void CharacterJump();
 	/**
-	 * calculates the damage to deal based on the distance fallen.
+	 * calculates the damage to deal based on the distance the character has fallen.
 	 */
 	void CharacterJumpDamage();
 	FTimerHandle JumpDamageHandle;
