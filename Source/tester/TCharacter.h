@@ -52,6 +52,12 @@ public:
 	float GetCharacterCurrentSpeed() const { return GetCharacterMovement()->MaxWalkSpeed; };
 
 
+	/**
+	 * reduces the value of @p CurrentHealth and changes @p CharacterState to Dead if it falls bellow 0.
+	 *
+	 * @param Damage amount to be reduced from @p CurrentHealth
+	 * @return @code true@endcode if successful @n @code false@endcode if unsuccessful | NOT IMPLEMENTED |
+	 */
 	UFUNCTION(Blueprintable, Category = Character)
 	bool CharacterTakeDamage(const float Damage);
 
@@ -120,7 +126,13 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	ETCharacterState PrevCharacterState;
 
-	/***/
+	/**
+	 * changes @p PrevCharacterState to @p CharacterState and changes @p CharacterState to @p State.
+	 * 
+	 * also applies other changes depending on @p State.
+	 * 
+	 * @param State new state
+	 */
 	void SetCharacterState(const ETCharacterState State);
 
 	// state change functions
@@ -146,8 +158,10 @@ private:
 	float MaxSpeed = 4515.f;
 
 	// health
-	const float MaxHealth = 100.f;
-	UPROPERTY(VisibleAnywhere)
+	/** default: 100.0 */
+	UPROPERTY(EditAnywhere, Category = Health)
+	float MaxHealth = 100.f;
+	UPROPERTY(VisibleAnywhere, Category = Health)
 	float CurrentHealth;
 
 	// capsule
@@ -163,24 +177,55 @@ private:
 	bool bStuck = false;
 	UPROPERTY(VisibleAnywhere, Category = Stuck)
 	FVector StuckLoc;
-	
+
+	/**
+	 * changes @p CharacterState to Crouch and reduces the size of the collision capsule.
+	 */
 	void CharacterCrouch();
+	/**
+	 * """""
+	 */
 	void CharacterUnCrouch();
 
+	/**
+	 * runs @code CanStand@endcode after @p StandTimeDelay has passed.
+	 */
 	void CanStandDelay();
+	/**
+	 * """""
+	 */
 	void CanStand();
 
+	/**
+	 * line trace upwards from four sides of the characters collision capsule.
+	 * 
+	 * @return @code true@endcode if none of the line traces collides \n @code false@endcode otherwise
+	 */
 	bool CheckCapsule() const;
 
 	FTimerHandle StopRunHandle;
 	const float StopRunDelay = .3f;
+	/**
+	 * changes @p CharacterState to Normal after @p StopRunDelay.
+	 */
 	void CharacterStopRun();
 
 	const float StandTimeDelay = .25f;
 
+	/**
+	 * changes @p CharacterState to Normal or Run and increases the size of the collision capsule.
+	 */
 	void CapsuleChangeNormal();
 
+	/**
+	 * checks if the character needs to take damage from a previous fall.
+	 *
+	 * makes the character jump.
+	 */
 	void CharacterJump();
+	/**
+	 * calculates the damage to deal based on the distance fallen.
+	 */
 	void CharacterJumpDamage();
 	FTimerHandle JumpDamageHandle;
 
@@ -225,6 +270,10 @@ private:
 	float AttackCooldown = 2.f;
 	void SetCanAttackTrue() { bCanAttack = true; }
 
+	/**
+	 * | NOT FULLY IMPLEMENTED |
+	 * 
+	 */
 	void CharacterRangedAttack();
 	/** default: 15.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
@@ -233,6 +282,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float RangedAttackRange = 1500.f;
 
+	/**
+	 * | NOT FULLY IMPLEMENTED |
+	 *
+	 * deals damage to the character and runs @code CharacterMeleeRecoil@endcode.
+	 */
 	void CharacterMeleeAttack();
 	/** default: 10.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
@@ -240,6 +294,9 @@ private:
 	/** default: 500.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float MeleeAttackRange = 500.f;
+	/**
+	 * calculates impulse and applies it to the character.
+	 */
 	void CharacterMeleeRecoil() const;
 	/** NEGATIVE VALUE | default: -650.0 */
 	UPROPERTY(EditAnywhere, Category = Attack)
@@ -252,6 +309,9 @@ private:
 
 	
 	// heal
+	/**
+	 * reduces the speed of the character and runs @code CharacterFinishHeal@endcode after @p HealDuration.
+	 */
 	void CharacterHeal();
 	UPROPERTY(VisibleAnywhere, Category = Heal)
 	bool bHealing = false;
@@ -265,14 +325,35 @@ private:
 	/** default: 25.0 */
 	UPROPERTY(EditAnywhere, Category = Heal)
 	float HealAmount = 25.f;
+	/**
+	 * increases @p CurrentHealth by @p HealAmount and returns speed to the normal value depending on @p CharacterState.
+	 */
 	void CharacterFinishHeal();
 	void SetHealingFalse() { bHealing = false; }
 
+	/**
+	 * changes the current speed of the character to @p Value.
+	 * 
+	 * if @p bHealing is @code true@endcode @p HealSpeedModifier is applied to @p Value.
+	 * 
+	 * @param Value new speed value
+	 */
 	void CharacterChangeSpeed(const float Value) const;
 
 	
 	// teleport
+	/**
+	 * """""
+	 */
 	void InstantTeleport();
+	/**
+	 * checks every direction at @p TeleportLocation for collisions to make sure the character collision capsule fits.
+	 * 
+	 * both standing and crouching capsule sizes are used in the check, if only the crouched fits @p CharacterState is changed to Crouch.
+	 * 
+	 * @param TeleportLocation location to check for collisions
+	 * @return @code true@endcode if there are no collision at @p TeleportLocation \n @code false@endcode otherwise
+	 */
 	bool CheckCollision(const FVector& TeleportLocation);
 	/** default: true */
 	UPROPERTY(EditAnywhere, Category = Teleport)
@@ -297,6 +378,9 @@ private:
 	const float TeleportSizeCrouch = 125.f;
 
 
+	/**
+	 * | TEST FUNCTION |
+	 */
 	void Test();
 	
 };

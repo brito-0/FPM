@@ -60,7 +60,7 @@ void ATCharacter::BeginPlay()
 	
 	
 	ChangeStateNormal();
-	CurrentHealth = MaxHealth;
+	CurrentHealth = GetCharacterMaxHealth();
 
 	if (MeleeAttackRecoilRange > 0) MeleeAttackRecoilRange = -650.f;
 	if (MeleeAttackRecoilRangeGround > 0) MeleeAttackRecoilRangeGround = -750.f;
